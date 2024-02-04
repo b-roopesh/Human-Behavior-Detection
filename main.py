@@ -3,7 +3,7 @@ import time
 import sqlite3
 from twilio.rest import Client
 import RPi.GPIO as GPIO
-import face_recognition  # Make sure to install the face_recognition library
+import face_recognition 
 import cv2
 import numpy as np
 
