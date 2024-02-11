@@ -3,14 +3,14 @@ import time
 import sqlite3
 from twilio.rest import Client
 import RPi.GPIO as GPIO
-import face_recognition 
+import face_recognition  # Make sure to install the face_recognition library
 import cv2
 import numpy as np
 
 class ChildSafetyRobot:
     def __init__(self):
         self.engine = pyttsx3.init()
-        self.client = Client("AC8322e7390ddcff879f38bbe6b2557aa3", "9bdf4f0e0c604661406c1ea5df59a8b3")
+        self.client = Client("AC8322e7390ddcff879f38bbe6b2557aa3", "703f2829938ef24d924b9c06499123a7")
         self.parent_phone = None
         self.conn = sqlite3.connect('child_safety.db')
         self.cursor = self.conn.cursor()
@@ -20,12 +20,12 @@ class ChildSafetyRobot:
                 child_name TEXT,
                 parent_phone TEXT,
                 face_encoding BLOB, -- Add the new column for face encoding
-                incident INTEGER DEFAULT 0
+                incident INTEGER DEFAULT 1
             )
         ''')
 
         self.child_profiles = {}
-        self.touch_pins = [2, 3]  # GPIO pins for touch sensors
+        self.touch_pins = [17, 27]  # GPIO pins for touch sensors
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.touch_pins[0], GPIO.IN)
         GPIO.setup(self.touch_pins[1], GPIO.IN)
@@ -62,8 +62,8 @@ class ChildSafetyRobot:
         print("Remember, you can say 'no' to bad touch and tell a grown-up.")
 
     def practice_touch_recognition(self):
-        self.speak("Let's practice recognizing good and bad touches.")
-        self.speak("I will ask you about different touches, and you can tell me if they are good or bad.")
+        #self.speak("Let's practice recognizing good and bad touches.")
+        #self.speak("I will ask you about different touches, and you can tell me if they are good or bad.")
         print("Let's practice recognizing good and bad touches.")
         print("I will ask you about different touches, and you can tell me if they are good or bad.")
 
@@ -77,16 +77,22 @@ class ChildSafetyRobot:
             # Read the state of the pins to determine if they are touched
             good_touch_state = GPIO.input(good_touch_pin)
             bad_touch_state = GPIO.input(bad_touch_pin)
-
             # Check if the sensor for good touch is activated
             if good_touch_state == GPIO.HIGH:
-                self.provide_feedback(True)  # Respond as good touch
+                self.speak("That's right! Good job!")
+                print("That's right! Good job!")
+                print("Lets try again")
+                self.practice_touch_recognition()  # Respond as good touch
             # Check if the sensor for bad touch is activated
             elif bad_touch_state == GPIO.HIGH:
-                self.provide_feedback(False)  # Respond as bad touch
+                self.speak("Hmm, that's not quite right. Let's try again.")
+                print("Hmm, that's not quite right. Let's try again.") # Respond as bad touch
                 self.send_alert_sms()
-
+            else:
+                print("please touch the sensors")
+                self.practice_touch_recognition()
             self.speak("Well done! You've practiced recognizing touches.")
+            print("Well done")
         else:
             # If child not recognized, register the face and add parent phone number
             self.register_child_face()
@@ -114,7 +120,7 @@ class ChildSafetyRobot:
                 distance = face_recognition.face_distance([known_face_encoding], face_encoding)
 
                 # If distance is below a threshold, consider it a match
-                if distance < 0.6:
+                if distance < 0.4:
                     return profile_name
 
         # Release the camera
@@ -142,7 +148,7 @@ class ChildSafetyRobot:
             # Prompt the user to enter child details
             child_name = input("Enter child's name: ")
             parent_phone = input("Enter parent's phone number: ")
-
+            self.parent_phone=parent_phone
             # Add the child profile to the database
             self.add_child_profile(child_name, parent_phone, face_encoding)
 
@@ -153,25 +159,22 @@ class ChildSafetyRobot:
 
         # Release the camera
         camera.release()
-
-    def provide_feedback(self, correct):
-        if correct:
-            self.speak("That's right! Good job!")
-        else:
-            self.speak("Hmm, that's not quite right. Let's try again.")
+        self.practice_touch_recognition()
 
     def conclude_lesson(self):
         self.speak("Remember, if you experience bad touch, tell a trusted adult immediately.")
         self.speak("Thank you for learning about good touch and bad touch!")
         print("Remember, if you experience bad touch, tell a trusted adult immediately.")
         print("Thank you for learning about good touch and bad touch!")
+        
 
     def send_alert_sms(self):
+        twilio="+12138163726"
         if self.parent_phone:
             message = self.client.messages.create(
-                body="Your child might have experienced an unsafe touch. Please check in with them.",
-                from_="+12512449702",
-                to=self.parent_phone
+                from_=twilio,
+                body="⚠️Your child might have experienced an unsafe touch❌. Please check in with them.",
+                to=f'{self.parent_phone}'
             )
             print("Alert SMS sent to parent.")
         else:
@@ -196,4 +199,4 @@ class ChildSafetyRobot:
 if __name__ == "__main__":
     robot = ChildSafetyRobot()
     robot.interact()
-    robot.close_database()
+    #robot.close_database()
