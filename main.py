@@ -8,14 +8,14 @@ import pickle
 class ChildSafetyRobot:
     def __init__(self):
         self.engine = pyttsx3.init()
-        self.client = Client("AC8322e7390ddcff879f38bbe6b2557aa3", "secret code")
+        self.client = Client("sid", "secret code")
         self.parent_phone_numbers = {
             "Roopesh": "+xxxxxxx",  # Add parent phone numbers for each child
             "Ashwitha": "+xxxxxx",
-            "Siri": "+1234567892",
-            "Prasanna": "+1234567893"
+            "Siri": "+xxxxxxxx",
+            "Prasanna": "+xxxxxx"
         }
-        self.unknown_parent_phone = "+917997159729"  # Parent phone number for unknown faces (Roopesh's number)
+        self.unknown_parent_phone = "+9xxxxxx"  # Parent phone number for unknown faces (Roopesh's number)
         self.touch_pins = [17, 27]  # GPIO pins for touch sensors
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.touch_pins[0], GPIO.IN)
