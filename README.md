@@ -36,3 +36,6 @@ The Child Safety Robot project aims to create an interactive system using Raspbe
 
 ## Credits:
 - Roopesh [GitHub](https://github.com/b-roopesh).
+- Ashwitha [GitHub](https://github.com/TAReddy).
+- Prasanna [GitHub](https://github.com/prasanna00112)
+- Siri [GitHub](https://github.com/YelluSiri1407)
